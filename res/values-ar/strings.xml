@@ -80,6 +80,9 @@
     <string name="empty_event" msgid="9018699257414338634">"لم يتم إنشاء الحدث لأنه فارغ."</string>
     <string name="creating_event_with_guest" msgid="5758688413124191931">"سيتم إرسال الدعوات."</string>
     <string name="saving_event_with_guest" msgid="9184584438475689577">"سيتم إرسال التحديثات."</string>
+    <string name="rsvp_accepted" msgid="8146618862268962727">"تم الرد بـ \"نعم\"."</string>
+    <string name="rsvp_tentative" msgid="6545510359501328718">"تم الرد بـ \"ربما\"."</string>
+    <string name="rsvp_declined" msgid="8686330037802222895">"تم الرد بـ \"لا\"."</string>
     <string name="create_event_dialog_save" msgid="1080859798521717414">"حفظ"</string>
     <string name="alert_title" msgid="7869592820853066853">"إعلامات التقاويم"</string>
     <string name="event_info_title" msgid="56024222340421620">"عرض الحدث"</string>
@@ -184,7 +187,7 @@
     <string name="preferences_clear_search_history_title" msgid="6619916370215282982">"محو سجل البحث"</string>
     <string name="preferences_clear_search_history_summary" msgid="7864674093455778158">"إزالة جميع عمليات البحث التي أجريتها"</string>
     <string name="search_history_cleared" msgid="1536707558435227567">"تم محو سجل البحث."</string>
-    <string name="preferences_alerts_title" msgid="6636088008103904020">"التنبيهات"</string>
+    <string name="preferences_alerts_title" msgid="6636088008103904020">"الاشعارات"</string>
     <string name="preferences_alerts_vibrateWhen_title" msgid="8731372580674292759">"اهتزاز"</string>
     <string name="preferences_alerts_ringtone_title" msgid="1849706055052358346">"الصوت"</string>
     <string name="preferences_alerts_popup_title" msgid="6643468203670475296">"التنبيه المنبثق"</string>

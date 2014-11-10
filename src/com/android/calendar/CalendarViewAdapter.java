@@ -18,11 +18,17 @@ package com.android.calendar;
 
 import com.android.calendar.CalendarController.ViewType;
 import com.android.calendar.lunar.Lunar;
+import com.android.lunar.ILunarService;
+import com.android.lunar.LunarUtils;
+import com.android.lunar.LunarUtils.LunarServiceConnListener;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.RemoteException;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,6 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.Locale;
 
 
@@ -83,6 +90,24 @@ public class CalendarViewAdapter extends BaseAdapter {
     private Handler mMidnightHandler = null; // Used to run a time update every midnight
     private final boolean mShowDate;   // Spinner mode indicator (view name or view name with date)
 
+    // Create the connect listener for lunar service.
+    private HashMap<String, String> mLunarInfoMap = new HashMap<String, String>();
+    private LunarServiceConnListener mLunarServiceConnListener = new LunarServiceConnListener() {
+
+        @Override
+        public void onLunarServiceDisconnected() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onLunarServiceConnected(ILunarService service) {
+            if (service != null && LunarUtils.getService() != null && LunarUtils.showLunar()) {
+                buildLunarInfo();
+                notifyDataSetChanged();
+            }
+        }
+    };
+
     // Updates time specific variables (time-zone, today's Julian day).
     private final Runnable mTimeUpdater = new Runnable() {
         @Override
@@ -104,6 +129,8 @@ public class CalendarViewAdapter extends BaseAdapter {
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mStringBuilder = new StringBuilder(50);
         mFormatter = new Formatter(mStringBuilder, Locale.getDefault());
+
+        LunarUtils.setListener(mLunarServiceConnListener);
 
         // Sets time specific variables and starts a thread for midnight updates
         if (showDate) {
@@ -185,6 +212,7 @@ public class CalendarViewAdapter extends BaseAdapter {
                 v = convertView;
             }
             TextView weekDay = (TextView) v.findViewById(R.id.top_button_weekday);
+            TextView lunarInfo = (TextView) v.findViewById(R.id.top_button_lunar);
             TextView date = (TextView) v.findViewById(R.id.top_button_date);
 
             Resources res = mContext.getResources();
@@ -212,6 +240,28 @@ public class CalendarViewAdapter extends BaseAdapter {
                         date.setText(buildMonthYearDate());
                         break;
                     case ViewType.AGENDA:
+            switch (mCurrentMainView) {
+                case ViewType.DAY:
+                    weekDay.setVisibility(View.VISIBLE);
+                    weekDay.setText(buildDayOfWeek());
+                    if (LunarUtils.getService() != null && LunarUtils.showLunar()) {
+                        lunarInfo.setVisibility(View.VISIBLE);
+                        String dateStr = Utils.formatDateRange(mContext, mMilliTime, mMilliTime,
+                                DateUtils.FORMAT_SHOW_DATE);
+                        if (mLunarInfoMap.containsKey(dateStr)) {
+                            lunarInfo.setText(mLunarInfoMap.get(dateStr));
+                        } else {
+                            buildLunarInfo();
+                            notifyDataSetChanged();
+                        }
+                    } else {
+                        lunarInfo.setVisibility(View.GONE);
+                    }
+                    date.setText(buildFullDate());
+                    break;
+                case ViewType.WEEK:
+                    lunarInfo.setVisibility(View.GONE);
+                    if (Utils.getShowWeekNumber(mContext)) {
                         weekDay.setVisibility(View.VISIBLE);
                         weekDay.setText(buildDayOfWeek() + "  " + buildLunarDate(true));;
                         date.setText(buildFullDate());
@@ -238,6 +288,7 @@ public class CalendarViewAdapter extends BaseAdapter {
                         break;
                     case ViewType.MONTH:
                         weekDay.setVisibility(View.GONE);
+
                     date.setText(buildMonthYearDate());
                         break;
                     case ViewType.AGENDA:
@@ -249,6 +300,23 @@ public class CalendarViewAdapter extends BaseAdapter {
                         v = null;
                         break;
                 }
+                    }
+                    date.setText(buildMonthYearDate());
+                    break;
+                case ViewType.MONTH:
+                    weekDay.setVisibility(View.GONE);
+                    lunarInfo.setVisibility(View.GONE);
+                    date.setText(buildMonthYearDate());
+                    break;
+                case ViewType.AGENDA:
+                    weekDay.setVisibility(View.VISIBLE);
+                    lunarInfo.setVisibility(View.GONE);
+                    weekDay.setText(buildDayOfWeek());
+                    date.setText(buildFullDate());
+                    break;
+                default:
+                    v = null;
+                    break;
             }
         } else {
             if (convertView == null || ((Integer) convertView.getTag()).intValue()
@@ -347,6 +415,14 @@ public class CalendarViewAdapter extends BaseAdapter {
     // Used when the user selects a new day/week/month to watch
     public void setTime(long time) {
         mMilliTime = time;
+        if (LunarUtils.getService() != null && LunarUtils.showLunar()) {
+            new Thread (new Runnable() {
+                @Override
+                public void run() {
+                    buildLunarInfo();
+                }
+            }).start();
+        }
         notifyDataSetChanged();
     }
 
@@ -462,7 +538,7 @@ public class CalendarViewAdapter extends BaseAdapter {
 
         // If week start and end is in 2 different months, use short months names
         Time t1 = new Time(mTimeZone);
-        t.set(weekEndTime);
+        t1.set(weekEndTime);
         int flags = DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NO_YEAR;
         if (t.month != t1.month) {
             flags |= DateUtils.FORMAT_ABBREV_MONTH;
@@ -479,5 +555,49 @@ public class CalendarViewAdapter extends BaseAdapter {
         return mContext.getResources().getQuantityString(R.plurals.weekN, week, week);
     }
 
+    private void buildLunarInfo() {
+        if (TextUtils.isEmpty(mTimeZone)) return;
+
+        Time time = new Time(mTimeZone);
+        try {
+            ILunarService service = LunarUtils.getService();
+            if (service != null && time != null) {
+                // put the current time lunar string into map
+                time.set(mMilliTime);
+                String date = Utils.formatDateRange(mContext, mMilliTime, mMilliTime,
+                        DateUtils.FORMAT_SHOW_DATE);
+                if (!mLunarInfoMap.containsKey(date)) {
+                    String lunarInfo = service.getComplexLunarInfo(
+                            time.year, time.month, time.monthDay, true, false);
+                    mLunarInfoMap.put(date, lunarInfo);
+                }
+
+                // put the pre time lunar string into map
+                long preMilliTime = mMilliTime - 24 * 3600 * 1000;
+                time.set(preMilliTime);
+                date = Utils.formatDateRange(mContext, preMilliTime, preMilliTime,
+                        DateUtils.FORMAT_SHOW_DATE);
+                if (!mLunarInfoMap.containsKey(date)) {
+                    String lunarInfo = service.getComplexLunarInfo(
+                            time.year, time.month, time.monthDay, true, false);
+                    mLunarInfoMap.put(date, lunarInfo);
+                }
+
+                // put the next time lunar string into map
+                long nextMilliTime = mMilliTime + 24 * 3600 * 1000;
+                time.set(nextMilliTime);
+                date = Utils.formatDateRange(mContext, nextMilliTime, nextMilliTime,
+                        DateUtils.FORMAT_SHOW_DATE);
+                if (!mLunarInfoMap.containsKey(date)) {
+                    String lunarInfo = service.getComplexLunarInfo(
+                            time.year, time.month, time.monthDay, true, false);
+                    mLunarInfoMap.put(date, lunarInfo);
+                }
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "build lunar info, catch the RemoteException:");
+            e.printStackTrace();
+        }
+    }
 }
 

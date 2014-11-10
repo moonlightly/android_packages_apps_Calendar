@@ -80,6 +80,9 @@
     <string name="empty_event" msgid="9018699257414338634">"មិន​បាន​បង្កើត​ព្រឹត្តិការណ៍​ទទេ។"</string>
     <string name="creating_event_with_guest" msgid="5758688413124191931">"នឹង​ផ្ញើ​ការ​អញ្ជើញ"</string>
     <string name="saving_event_with_guest" msgid="9184584438475689577">"នឹង​ផ្ញើ​បច្ចុប្បន្នភាព។"</string>
+    <string name="rsvp_accepted" msgid="8146618862268962727">"បាន​ឆ្លើយ​តប​ បាទ​/ចាស។"</string>
+    <string name="rsvp_tentative" msgid="6545510359501328718">"បាន​ឆ្លើយតប ប្រហែល​​ជា​ទៅ។"</string>
+    <string name="rsvp_declined" msgid="8686330037802222895">"បាន​ឆ្លើយ​តប​ ទេ​។"</string>
     <string name="create_event_dialog_save" msgid="1080859798521717414">"រក្សាទុក"</string>
     <string name="alert_title" msgid="7869592820853066853">"ការ​ជូនដំណឹង​ប្រតិទិន"</string>
     <string name="event_info_title" msgid="56024222340421620">"មើល​ព្រឹត្តិការណ៍"</string>
@@ -90,7 +93,7 @@
     <string name="edit_event_calendar_label" msgid="4556498359505856900">"ប្រតិទិន"</string>
     <string name="edit_event_show_all" msgid="4558049350756058301">"បង្ហាញ​ទាំងអស់"</string>
     <string name="description_label" msgid="7193475046717505855">"ពណ៌នា"</string>
-    <string name="presence_label" msgid="6169724148441175862">"បង្ហាញ​ខ្ញុំ​ជា"</string>
+    <string name="presence_label" msgid="6169724148441175862">"បង្ហាញ​ថាខ្ញុំ"</string>
     <string name="privacy_label" msgid="9215031965259597335">"ភាព​ឯកជន"</string>
     <string name="reminders_label" msgid="7292389181815525676">"បន្ថែម​កម្មវិធី​រំលឹក"</string>
     <string name="no_syncable_calendars" msgid="7019488867045436129">"មិន​មានប្រតិទិន"</string>
@@ -202,7 +205,7 @@
     <item quantity="one" msgid="8971334808414201327">"+1"</item>
     <item quantity="other" msgid="1997405398178470838">"+<xliff:g id="NUMBER">%d</xliff:g>"</item>
   </plurals>
-    <string name="gadget_no_events" msgid="5209110911088302855">"នឹង​មិន​មាន​ព្រឹត្តិការណ៍​មកដល់​ទេ"</string>
+    <string name="gadget_no_events" msgid="5209110911088302855">"មិន​មាន​ព្រឹត្តិការណ៍​ដែលនឹង​មកដល់​ទេ"</string>
     <string name="preferences_experimental_category" msgid="8111213192001230350">"ពិសោធន៍"</string>
     <string name="preferences_reminders_category" msgid="3179315692653755740">"កម្មវិធី​រំលឹក"</string>
     <string name="preferences_reminders_responded_label" msgid="1196570678238475838">"រំលង​កម្មវិធី​រំលឹក"</string>
@@ -229,7 +232,7 @@
     <string name="accessibility_repeats" msgid="1629279916830919582">"ការ​ធ្វើ​ម្ដងទៀត"</string>
     <string name="accessibility_reminder_time" msgid="3594100545814579575">"ម៉ោង​កម្មវិធី​ជូនដំណឹង"</string>
     <string name="accessibility_reminder_type" msgid="5339120699701437227">"ប្រភេទ​កម្មវិធី​ជូនដំណឹង"</string>
-    <string name="accessibility_reminder_showmeas" msgid="6669129015980006570">"បង្ហាញ​ខ្ញុំ​ជា"</string>
+    <string name="accessibility_reminder_showmeas" msgid="6669129015980006570">"បង្ហាញ​ថាខ្ញុំ"</string>
     <string name="accessibility_reminder_privacy" msgid="8669288484484022771">"ភាព​ឯកជន"</string>
     <string name="acessibility_cal_notification" msgid="7267601064994839394">"ការ​ជូនដំណឹង​ប្រតិទិន"</string>
     <string name="acessibility_snooze_notification" msgid="5007852779125102681">"ផ្អាក​ការ​ជូនដំណឹង"</string>

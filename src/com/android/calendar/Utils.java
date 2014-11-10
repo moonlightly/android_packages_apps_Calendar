@@ -22,6 +22,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -233,9 +234,17 @@ public class Utils {
             }
         }
 
-        // Default to the last view
-        return prefs.getInt(
-                GeneralPreferences.KEY_START_VIEW, GeneralPreferences.DEFAULT_START_VIEW);
+        // Check if the user wants the last view or the default startup view
+        int defaultStart = Integer.valueOf(prefs.getString(GeneralPreferences.KEY_DEFAULT_START,
+                GeneralPreferences.DEFAULT_DEFAULT_START));
+        if (defaultStart == -2) {
+            // Return the last view used
+            return prefs.getInt(
+                    GeneralPreferences.KEY_START_VIEW, GeneralPreferences.DEFAULT_START_VIEW);
+        } else {
+            // Return the default view
+            return defaultStart;
+        }
     }
 
     /**
@@ -699,6 +708,21 @@ public class Utils {
         return prefs.getInt(GeneralPreferences.KEY_DAYS_PER_WEEK, 7);
     }
 
+    public static boolean useCustomSnoozeDelay(Context context) {
+        final SharedPreferences prefs = GeneralPreferences.getSharedPreferences(context);
+        return prefs.getBoolean(GeneralPreferences.KEY_USE_CUSTOM_SNOOZE_DELAY, false);
+    }
+
+    public static long getDefaultSnoozeDelayMs(Context context) {
+        final SharedPreferences prefs = GeneralPreferences.getSharedPreferences(context);
+        final String value = prefs.getString(GeneralPreferences.KEY_DEFAULT_SNOOZE_DELAY, null);
+        final long intValue = value != null
+                ? Long.valueOf(value)
+                : GeneralPreferences.SNOOZE_DELAY_DEFAULT_TIME;
+
+        return intValue * 60L * 1000L; // min -> ms
+    }
+
     /**
      * Determine whether the column position is Saturday or not.
      *
@@ -846,6 +870,28 @@ public class Utils {
         int g = (((color & 0x0000ff00) * a) + ((bg & 0x0000ff00) * (0xff - a))) & 0x00ff0000;
         int b = (((color & 0x000000ff) * a) + ((bg & 0x000000ff) * (0xff - a))) & 0x0000ff00;
         return (0xff000000) | ((r | g | b) >> 8);
+    }
+
+    public static void trySyncAndDisableUpgradeReceiver(Context context) {
+        final PackageManager pm = context.getPackageManager();
+        ComponentName upgradeComponent = new ComponentName(context, UpgradeReceiver.class);
+        if (pm.getComponentEnabledSetting(upgradeComponent) ==
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED) {
+            // The upgrade receiver has been disabled, which means this code has been run before,
+            // so no need to sync.
+            return;
+        }
+
+        Bundle extras = new Bundle();
+        extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        ContentResolver.requestSync(
+                null /* no account */,
+                Calendars.CONTENT_URI.getAuthority(),
+                extras);
+
+        // Now unregister the receiver so that we won't continue to sync every time.
+        pm.setComponentEnabledSetting(upgradeComponent,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
     }
 
     // A single strand represents one color of events. Events are divided up by
