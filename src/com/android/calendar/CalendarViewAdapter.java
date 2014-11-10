@@ -215,6 +215,7 @@ public class CalendarViewAdapter extends BaseAdapter {
             TextView lunarInfo = (TextView) v.findViewById(R.id.top_button_lunar);
             TextView date = (TextView) v.findViewById(R.id.top_button_date);
 
+
             Resources res = mContext.getResources();
             String strCountry = res.getConfiguration().locale.getCountry();
             if(strCountry.equals("CN") || strCountry.equals("TW")){
@@ -240,6 +241,14 @@ public class CalendarViewAdapter extends BaseAdapter {
                         date.setText(buildMonthYearDate());
                         break;
                     case ViewType.AGENDA:
+                        weekDay.setText(buildDayOfWeek() + "  " + buildLunarDate(true));;
+                        date.setText(buildFullDate());
+                        break;
+                    default:
+                        v = null;
+                        break;
+                }
+            } else {
             switch (mCurrentMainView) {
                 case ViewType.DAY:
                     weekDay.setVisibility(View.VISIBLE);
@@ -263,43 +272,9 @@ public class CalendarViewAdapter extends BaseAdapter {
                     lunarInfo.setVisibility(View.GONE);
                     if (Utils.getShowWeekNumber(mContext)) {
                         weekDay.setVisibility(View.VISIBLE);
-                        weekDay.setText(buildDayOfWeek() + "  " + buildLunarDate(true));;
-                        date.setText(buildFullDate());
-                        break;
-                    default:
-                        v = null;
-                        break;
-                }
-            } else {
-                switch (mCurrentMainView) {
-                    case ViewType.DAY:
-                        weekDay.setVisibility(View.VISIBLE);
-                        weekDay.setText(buildDayOfWeek());
-                        date.setText(buildFullDate());
-                       break;
-                    case ViewType.WEEK:
-                        if (Utils.getShowWeekNumber(mContext)) {
-                            weekDay.setVisibility(View.VISIBLE);
-                            weekDay.setText(buildWeekNum());
-                        } else {
-                           weekDay.setVisibility(View.GONE);
-                        }
-                        date.setText(buildMonthYearDate());
-                        break;
-                    case ViewType.MONTH:
+                        weekDay.setText(buildWeekNum());
+                    } else {
                         weekDay.setVisibility(View.GONE);
-
-                    date.setText(buildMonthYearDate());
-                        break;
-                    case ViewType.AGENDA:
-                        weekDay.setVisibility(View.VISIBLE);
-                        weekDay.setText(buildDayOfWeek());
-                        date.setText(buildFullDate());
-                        break;
-                    default:
-                        v = null;
-                        break;
-                }
                     }
                     date.setText(buildMonthYearDate());
                     break;
@@ -317,6 +292,7 @@ public class CalendarViewAdapter extends BaseAdapter {
                 default:
                     v = null;
                     break;
+                }
             }
         } else {
             if (convertView == null || ((Integer) convertView.getTag()).intValue()
